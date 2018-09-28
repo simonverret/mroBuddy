@@ -12,25 +12,29 @@ set title "$t=0.190$ eV, $\\hbar/\\tau=t/25$, $t_z=-0.07t$"
 
 x="(column('kx'))"
 set xlabel 'kx'
-# set xrange [-3.1416:3.1416]
-# set xtics .5
+set xrange [-3.1416:3.1416]
+set xtics .5
 
 y="(column('ky'))"
 set ylabel 'ky' offset -1,0
-# set yrange [-3.1416:3.1416]
-# set ytics .5
+set yrange [-3.1416:3.1416]
+set ytics .5
 
 z="(column('kz'))"
 set zlabel 'kz' offset -1,0
-# set zrange [-6.283:6.283]
-# set ztics 1.
+set zrange [-6.283:6.283]
+set ztics 1.
 
 set ticslevel 0
-#set key top left samplen 2 spacing 0.8 maxrows 2
+unset key
+
+# plot \
+# for [ii=240:247]'FS.dat' i ii u 1:2 w l  lw 1.5 lc rgb 'black',\
+# 'amro.dat' u @x:@y w l lw 1 lc rgb 'red' dt 3
 
 splot \
-'amro.dat' u @x:@y:@z w lp ls 1 t "test"
-
+'FS.dat' u @x:@y:@z w lp pt 7 ps 0.1  lw 0.5 lc rgb 'black',\
+'amro.dat' u @x:@y:@z w l lw 2 lc rgb 'red'
 
 pause mouse close
 exit
