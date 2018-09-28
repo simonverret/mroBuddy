@@ -177,8 +177,8 @@ double* vbar(double Kx, double Ky, double Kz) {
 	static double vbar[3];
 	vbar[0] = vbar[1] = vbar[2] = 0;
 
-	//FILE *fileOut = fopen("amro.dat","w");
-	//fprintf(fileOut, "            t            kx            ky            kz         vbarx         vbary         vbarz\n");
+	FILE *fileOut = fopen("amro.dat","w");
+	fprintf(fileOut, "            t            kx            ky            kz         vbarx         vbary         vbarz\n");
 
 	int nn=0; 
 	while (exp(-nn*h/tau) > ACC) {
@@ -220,9 +220,8 @@ double* vbar(double Kx, double Ky, double Kz) {
 		vbar[1] += newVelocity[1]*exp(-nn*h/tau);
 		vbar[2] += newVelocity[2]*exp(-nn*h/tau);
 
-		//fprintf(fileOut,"% 13f % 13f % 13f % 13f % 13f % 13f % 13f \n", nn*h, newKx, newKy, newKz, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);
-		//printf("iteration %5i  --  t = %4f , vbar = (%4f,%4f,%4f)\n", nn, nn*h, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);//fflush(stdout);
-		
+		fprintf(fileOut,"% 13f % 13f % 13f % 13f % 13f % 13f % 13f \n", nn*h, newKx, newKy, newKz, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);
+		printf("iteration %5i  --  t = %4f , vbar = (%4f,%4f,%4f)\n", nn, nn*h, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);//fflush(stdout);
 		Kx = newKx;
 		Ky = newKy;
 		Kz = newKz;
@@ -290,7 +289,7 @@ int main(int argc, const char * argv[]) {
 	calculateFS(FS);
 	printFS(FS);
 
-	//vbar(FS[10][15][0], FS[10][15][1], FS[10][15][2]);
+	vbar(FS[5][15][0], FS[5][15][1], FS[5][15][2]);
 
 	printf("\n\namroBuddy over.\n");
 	return 0;
