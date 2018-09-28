@@ -16,10 +16,10 @@ typedef enum { false, true } bool;
 #define DIMZ 50
 
 double t   =  1.;
-double tp  = -0.12;
-double tpp =  0.06;
-double tz  =  0.07;
-double mu  = -0.4;
+double tp  = -0.21;
+double tpp =  0.066;
+double tz  =  0.020;
+double mu  = -1.53;
 double tau =  25;
 
 // double B = 0.1;
@@ -178,7 +178,7 @@ double* vbar(double Kx, double Ky, double Kz, double h, double B[3]) {
 	vbar[0] = vbar[1] = vbar[2] = 0;
 
 	// FILE *fileOut = fopen("lastTrajectory.dat","w");
-	//fprintf(fileOut, "            t            kx            ky            kz         vbarx         vbary         vbarz\n");
+	// fprintf(fileOut, "            t            kx            ky            kz         vbarx         vbary         vbarz\n");
 
 	int nn=0; 
 	while (exp(-nn*h/tau) > ACC) {
@@ -220,8 +220,8 @@ double* vbar(double Kx, double Ky, double Kz, double h, double B[3]) {
 		vbar[1] += newVelocity[1]*exp(-nn*h/tau);
 		vbar[2] += newVelocity[2]*exp(-nn*h/tau);
 
-		//fprintf(fileOut,"% 13f % 13f % 13f % 13f % 13f % 13f % 13f \n", nn*h, newKx, newKy, newKz, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);
-		//printf("iteration %5i  --  t = %4f , vbar = (%4f,%4f,%4f)\n", nn, nn*h, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);//fflush(stdout);
+		// fprintf(fileOut,"% 13f % 13f % 13f % 13f % 13f % 13f % 13f \n", nn*h, newKx, newKy, newKz, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);
+		// printf("iteration %5i  --  t = %4f , vbar = (%4f,%4f,%4f)\n", nn, nn*h, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);//fflush(stdout);
 		Kx = newKx;
 		Ky = newKy;
 		Kz = newKz;
@@ -240,18 +240,19 @@ int main(int argc, const char * argv[]) {
 
 	double FS[DIMXY][DIMZ][3];
 	calculateFS(FS);
-	//printFS(FS);
+	printFS(FS);
 
-	double hh = 0.5;
+	double hh = 10.;
 	double integral=0;
-	double Bamp = 0.05;
-	double Bphi = 0;
+	double integralRef = 0;
+	double Bamp = 0.03;
+	double Bphi = 0;//M_PI/6.;
 
 	FILE *fileOut = fopen("amro.dat","w");
-	fprintf(fileOut,"B           theta       phi           rho_zz      \n");fflush(fileOut);
+	fprintf(fileOut,"B           theta       phi         rho_zz      first       \n");fflush(fileOut);
 
-	for (int bb=0; bb<31; bb++) {
-		double Btheta = bb*M_PI/30;
+	for (int bb=0; bb<102; bb++) {
+		double Btheta = bb*M_PI/101;
 		double Bfield[3];
 		Bfield[0] = Bamp*sin(Btheta)*cos(Bphi);
 		Bfield[1] = Bamp*sin(Btheta)*sin(Bphi);
@@ -260,7 +261,7 @@ int main(int argc, const char * argv[]) {
 		
 		for (int zz = 0; zz < DIMZ; zz++) {
 			double* kvec;
-			printf("bb=%i/%i -- zz=%i/%i -- integral = %f\n",bb,30, zz, DIMZ, integral); fflush(stdout);
+			printf("bb=%i/%i -- zz=%i/%i -- integral = %f\n",bb,51, zz, DIMZ, integral); fflush(stdout);
 
 			for (int tt = DIMXY-1; tt >= 0; tt--) { 
 				kvec = & FS[tt][zz][0]; 
@@ -276,7 +277,8 @@ int main(int argc, const char * argv[]) {
 			}
 		}
 		integral /= DIMXY*DIMZ*8.;
-		fprintf(fileOut,"%2.9f %2.9f %2.9f %2.9f\n",Bamp, Btheta, Bphi, integral);fflush(fileOut);
+		if (bb==0) {integralRef = integral;}
+		fprintf(fileOut,"%2.9f %2.9f %2.9f %2.9f %2.9f\n",Bamp, Btheta, Bphi, integral, integralRef);fflush(fileOut);
 	}
 	fprintf(fileOut,"\n");
 
