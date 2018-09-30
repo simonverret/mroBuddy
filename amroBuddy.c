@@ -1,4 +1,3 @@
-
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <complex.h>
@@ -16,13 +15,13 @@ typedef enum { false, true } bool;
 #define DIMZ 50
 
 double t   =  1.;
-double tp  = -0.21;
-double tpp =  0.066;
-double tz  =  0.020;
-double mu  = -1.53;
+double tp  = -0.12;
+double tpp =  0.06;
+double tz  =  0.07;
+double mu  = -0.81;
 double tau =  25;
 
-// double B = 0.1;
+// double B = 0.006;
 // double theta = 0;
 // double phi = 0;
 
@@ -92,12 +91,13 @@ void calculateFS(double fermiSurface[DIMXY][DIMZ][3]) {
 	for (int zz = 0; zz < DIMZ; zz++) {
 		double kFz = -2*M_PI + (zz/((double)DIMZ-1))*4*M_PI;
 		
-		// theta is clockwise, from (pi,pi), with theta =0 being the 45deg axis (0,0)-(pi,pi)
-		// the max value of angle depend on the position of the FS for kx = 0.
+		//// Only an eight of the FS is computed. theta is clockwise, from (pi,pi), which means that
+		//// theta =0 is the axis from (0,0) to (pi,pi) and =pi/4 is the axis from (0,0) to (0,pi)
+		//// the max value of angle is determined for the FS for kx = 0.
 		double maxTheta = M_PI/4.; 
 		double maxKy = M_PI;
 		do {
-			maxTheta -= 0.01;
+			maxTheta -= ACC;
 			maxKy = M_PI*(1+tan(maxTheta-M_PI/4.));
 		} while (calculateDispersion(0, maxKy, kFz) > 0.);
 		
@@ -107,10 +107,8 @@ void calculateFS(double fermiSurface[DIMXY][DIMZ][3]) {
 			double kx2 = M_PI, ky2 = M_PI;
 			double xi1 = calculateDispersion(kx1, ky1, kFz);
 			double xi2 = calculateDispersion(kx2, ky2, kFz);
-
 			double xi, kFx = NAN, kFy = NAN;		
 
-			//printf("%f\n", xi1*xi2);fflush(stdout);	
 			if (xi1*xi2 < 0) {
 				do {
 					kFx = (kx2+kx1)/2.;
@@ -173,17 +171,18 @@ void printFS(double fermiSurface[DIMXY][DIMZ][3]){
 
 
 
-double* vbar(double Kx, double Ky, double Kz, double h, double B[3]) {
+double* vbar(double Kx, double Ky, double Kz, double h, double B[3], bool printTrigger) {
 	static double vbar[3];
 	vbar[0] = vbar[1] = vbar[2] = 0;
 
-	// FILE *fileOut = fopen("lastTrajectory.dat","w");
-	// fprintf(fileOut, "            t            kx            ky            kz         vbarx         vbary         vbarz\n");
+	FILE *fileOut;
+	if (printTrigger) fileOut = fopen("trajectory.dat","w");
+	if (printTrigger) fprintf(fileOut, "            t            kx            ky            kz         vbarx         vbary         vbarz\n");
 
 	int nn=0; 
 	while (exp(-nn*h/tau) > ACC) {
 		nn++;
-		// compute next point with Runge-Kutta
+		//// compute next point with Runge-Kutta
 		double* force;
 		force = calculateForce( Kx, Ky, Kz , B[0],B[1],B[2]);
 		double k1x = +h*force[0];
@@ -205,14 +204,14 @@ double* vbar(double Kx, double Ky, double Kz, double h, double B[3]) {
 		double newKx = Kx + k1x/6. + k2x/3. + k3x/3. + k4x/6.;
 		double newKy = Ky + k1y/6. + k2y/3. + k3y/3. + k4y/6.;
 		double newKz = Kz + k1z/6. + k2z/3. + k3z/3. + k4z/6.;
-		// if (wrapBrillouin){
-		// 	if (newKx >    M_PI) {newKx = newKx - 2*M_PI; fprintf(fileOut,"\n");}
-		// 	if (newKx <   -M_PI) {newKx = newKx + 2*M_PI; fprintf(fileOut,"\n");}
-		// 	if (newKy >    M_PI) {newKy = newKy - 2*M_PI; fprintf(fileOut,"\n");}
-		// 	if (newKy <   -M_PI) {newKy = newKy + 2*M_PI; fprintf(fileOut,"\n");}
-		// 	if (newKz >  2*M_PI) {newKz = newKz - 4*M_PI; fprintf(fileOut,"\n");}
-		// 	if (newKz < -2*M_PI) {newKz = newKz + 4*M_PI; fprintf(fileOut,"\n");}
-		// }
+		if (wrapBrillouin && printTrigger){
+			if (newKx >    M_PI) {newKx = newKx - 2*M_PI; fprintf(fileOut,"\n");}
+			if (newKx <   -M_PI) {newKx = newKx + 2*M_PI; fprintf(fileOut,"\n");}
+			if (newKy >    M_PI) {newKy = newKy - 2*M_PI; fprintf(fileOut,"\n");}
+			if (newKy <   -M_PI) {newKy = newKy + 2*M_PI; fprintf(fileOut,"\n");}
+			if (newKz >  2*M_PI) {newKz = newKz - 4*M_PI; fprintf(fileOut,"\n");}
+			if (newKz < -2*M_PI) {newKz = newKz + 4*M_PI; fprintf(fileOut,"\n");}
+		}
 		double* newVelocity; 
 		newVelocity = calculateVelocity(newKx, newKy, newKz);
 
@@ -220,8 +219,7 @@ double* vbar(double Kx, double Ky, double Kz, double h, double B[3]) {
 		vbar[1] += newVelocity[1]*exp(-nn*h/tau);
 		vbar[2] += newVelocity[2]*exp(-nn*h/tau);
 
-		// fprintf(fileOut,"% 13f % 13f % 13f % 13f % 13f % 13f % 13f \n", nn*h, newKx, newKy, newKz, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);
-		// printf("iteration %5i  --  t = %4f , vbar = (%4f,%4f,%4f)\n", nn, nn*h, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);//fflush(stdout);
+		if (printTrigger) fprintf(fileOut,"% 13f % 13f % 13f % 13f % 13f % 13f % 13f \n", nn*h, newKx, newKy, newKz, vbar[0]/(double)nn, vbar[1]/(double)nn, vbar[2]/(double)nn);
 		Kx = newKx;
 		Ky = newKy;
 		Kz = newKz;
@@ -233,7 +231,9 @@ double* vbar(double Kx, double Ky, double Kz, double h, double B[3]) {
 	return vbar;
 }
 
-
+double distance(double v1[3], double v2[3]){
+	return sqrt((v2[0]-v1[0])*(v2[0]-v1[0]) + (v2[1]-v1[1])*(v2[1]-v1[1]) + (v2[2]-v1[2])*(v2[2]-v1[2]));
+}
 
 int main(int argc, const char * argv[]) {
 	printf("\namroBuddy starting\n\n");
@@ -242,41 +242,60 @@ int main(int argc, const char * argv[]) {
 	calculateFS(FS);
 	printFS(FS);
 
-	double hh = 10.;
+	double hh = 5.;
 	double integral=0;
 	double integralRef = 0;
 	double Bamp = 0.03;
 	double Bphi = 0;//M_PI/6.;
+	int fieldSamples = 31;
 
 	FILE *fileOut = fopen("amro.dat","w");
-	fprintf(fileOut,"B           theta       phi         rho_zz      first       \n");fflush(fileOut);
+	fprintf(fileOut,"B           theta       phi         sigma_zz    sigma_ref   \n");fflush(fileOut);
 
-	for (int bb=0; bb<102; bb++) {
-		double Btheta = bb*M_PI/101;
+	for (int bb=0; bb<fieldSamples; bb++) {
+		double Btheta = bb*M_PI/((double)fieldSamples-1);
 		double Bfield[3];
 		Bfield[0] = Bamp*sin(Btheta)*cos(Bphi);
 		Bfield[1] = Bamp*sin(Btheta)*sin(Bphi);
 		Bfield[2] = Bamp*cos(Btheta);
 		
-		
+		integral =0;
 		for (int zz = 0; zz < DIMZ; zz++) {
+			
 			double* kvec;
-			printf("bb=%i/%i -- zz=%i/%i -- integral = %f\n",bb,51, zz, DIMZ, integral); fflush(stdout);
-
-			for (int tt = DIMXY-1; tt >= 0; tt--) { 
-				kvec = & FS[tt][zz][0]; 
-				double vz = calculateVelocity(kvec[1],  kvec[0], kvec[2])[2];
-				integral += vz * vbar( kvec[1],  kvec[0], kvec[2] , hh , Bfield)[2];
-				integral += vz * vbar( kvec[0],  kvec[1], kvec[2] , hh , Bfield)[2];
-				integral += vz * vbar(-kvec[0],  kvec[1], kvec[2] , hh , Bfield)[2];
-				integral += vz * vbar(-kvec[1],  kvec[0], kvec[2] , hh , Bfield)[2];
-				integral += vz * vbar(-kvec[1], -kvec[0], kvec[2] , hh , Bfield)[2];
-				integral += vz * vbar(-kvec[0], -kvec[1], kvec[2] , hh , Bfield)[2];
-				integral += vz * vbar( kvec[0], -kvec[1], kvec[2] , hh , Bfield)[2];
-				integral += vz * vbar( kvec[1], -kvec[0], kvec[2] , hh , Bfield)[2];
+			for (int tt = 0; tt < DIMXY; tt++) {
+				if (!isnan(FS[tt][zz][0])) {
+					kvec = &FS[tt][zz][0];
+					//// WARNING: using the following definition can lead to segmentation faults if tt=0 or tt=DIMXY 
+					double* next = &FS[(tt+1)][zz][0];
+					double* prev = &FS[(tt-1)][zz][0];
+					
+					double len = sqrt((M_PI-kvec[0])*(M_PI-kvec[0])+(M_PI-kvec[1])*(M_PI-kvec[1]))*sin(M_PI_4/(double)DIMXY);
+					if (tt == 0 || isnan(*prev)) {
+						if (!isnan(*next)) len = distance(prev,kvec)/2.;
+					} else if (tt == DIMXY-1 || isnan(*next)) {
+						if (!isnan(*prev)) len = distance(prev,kvec)/2.;
+					} else {                   
+						len = distance(prev,kvec)/2.+distance(kvec,next)/2.;
+					}
+					
+					double vz = calculateVelocity(kvec[1],  kvec[0], kvec[2])[2];
+					bool printTrigger = (bb==fieldSamples/4 && zz==DIMZ/2 && tt==DIMXY/2); 
+					integral += vz * vbar( kvec[1],  kvec[0], kvec[2] , hh , Bfield, printTrigger)[2];
+					integral += vz * vbar( kvec[0],  kvec[1], kvec[2] , hh , Bfield, false)[2];
+					integral += vz * vbar(-kvec[0],  kvec[1], kvec[2] , hh , Bfield, false)[2];
+					integral += vz * vbar(-kvec[1],  kvec[0], kvec[2] , hh , Bfield, false)[2];
+					integral += vz * vbar(-kvec[1], -kvec[0], kvec[2] , hh , Bfield, false)[2];
+					integral += vz * vbar(-kvec[0], -kvec[1], kvec[2] , hh , Bfield, false)[2];
+					integral += vz * vbar( kvec[0], -kvec[1], kvec[2] , hh , Bfield, false)[2];
+					integral += vz * vbar( kvec[1], -kvec[0], kvec[2] , hh , Bfield, false)[2];
+					//integral *= len;
+					//printf("%f\n",len);
+				}
 			}
+			printf("bb=%i/%i -- zz=%i/%i -- integral = %f\n",bb,51, zz, DIMZ, integral); fflush(stdout);
 		}
-		integral /= DIMXY*DIMZ*8.;
+		integral /= DIMZ*8.;
 		if (bb==0) {integralRef = integral;}
 		fprintf(fileOut,"%2.9f %2.9f %2.9f %2.9f %2.9f\n",Bamp, Btheta, Bphi, integral, integralRef);fflush(fileOut);
 	}

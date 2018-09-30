@@ -2,6 +2,7 @@ w = 600
 h = 600
 
 set term wxt persist size w,h
+bind "w" "unset output; exit gnuplot"
 # set terminal epslatex size w cm,h cm color dashlength 0.3
 # set output 'plot.tex'
 # set termopt enhanced 
@@ -28,13 +29,8 @@ set ztics 1.
 set ticslevel 0
 unset key
 
-# plot \
-# for [ii=240:247]'FS.dat' i ii u 1:2 w l  lw 1.5 lc rgb 'black',\
-# 'amro.dat' u @x:@y w l lw 1 lc rgb 'red' dt 3
-
 splot \
 'FS.dat' u @x:@y:@z w lp pt 7 ps 0.1  lw 0.5 lc rgb 'black',\
-'amro.dat' u @x:@y:@z w l lw 2 lc rgb 'red'
+'trajectory.dat' u @x:@y:@z w l lw 2 lc rgb 'red'
 
-pause mouse close
-exit
+pause -1
