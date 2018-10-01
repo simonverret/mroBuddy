@@ -32,7 +32,8 @@ unset key
 splot \
 'FS.dat' u @x:@y:@z w lp pt 7 ps 0.1  lw 0.5 lc rgb 'black',\
 'trajectory.dat' u @x:@y:@z w l lw 2 lc rgb 'red',\
-'fastTrajectory.dat' u 2:3:4 w l lw 2 lc rgb 'blue'
+
+#'fastTrajectory.dat' u 2:3:4 w l lw 2 lc rgb 'blue'
 
 
 pause -1

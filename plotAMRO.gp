@@ -17,6 +17,7 @@ set xrange [0:pi]
 set xtics ('0' 0,'45' pi/4,'90' pi/2,'135' pi/3, '180' pi)
 
 y="(column('sigma_ref')/column('sigma_zz'))"
+y="(column('sigma_zz'))"
 set ylabel '\rho_zz' offset -1,0
 #set yrange [0.8:1.2]
 set ytics 0.1
@@ -27,7 +28,8 @@ unset key
 # 'amro.dat' u @x:@y w l lw 1 lc rgb 'red' dt 3
 
 plot \
-'amro.dat' u @x:@y w l lw 2 lc rgb 'blue',\
+'amro_long.dat' u @x:@y w l lw 2 lc rgb 'black',\
+'amro.dat' u @x:@y w l lw 1 lc rgb 'blue',\
 
 #'fastAMRO.dat' u @x:@y w l lw 1 lc rgb 'red'
 

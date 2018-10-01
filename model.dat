@@ -1,0 +1,15 @@
+t	 1
+tp	-0.12
+tpp	 0.06
+tz	 0.07
+mu	-0.71
+Bamp	 0.03
+Bphi	 0
+Btheta_min	 0
+Btheta_max	 160
+Btheta_step	 10
+tau	 25
+accuracy	 10e-9
+dt	 1
+Nz	 30
+Nxy	 20
