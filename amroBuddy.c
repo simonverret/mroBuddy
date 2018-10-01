@@ -270,7 +270,7 @@ int main(int argc, const char * argv[]) {
 					double* next = &FS[(tt+1)][zz][0];
 					double* prev = &FS[(tt-1)][zz][0];
 					
-					double len = sqrt((M_PI-kvec[0])*(M_PI-kvec[0])+(M_PI-kvec[1])*(M_PI-kvec[1]))*sin(M_PI_4/(double)DIMXY);
+					double len = sqrt((M_PI-kvec[0])*(M_PI-kvec[0])+(M_PI-kvec[1])*(M_PI-kvec[1]))*2*sin(M_PI/8./(double)DIMXY);
 					if (tt == 0 || isnan(*prev)) {
 						if (!isnan(*next)) len = distance(prev,kvec)/2.;
 					} else if (tt == DIMXY-1 || isnan(*next)) {

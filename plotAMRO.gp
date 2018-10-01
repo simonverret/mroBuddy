@@ -27,6 +27,8 @@ unset key
 # 'amro.dat' u @x:@y w l lw 1 lc rgb 'red' dt 3
 
 plot \
-'amro.dat' u @x:@y w l lw 2 lc rgb 'red'
+'amro.dat' u @x:@y w l lw 2 lc rgb 'blue',\
+
+#'fastAMRO.dat' u @x:@y w l lw 1 lc rgb 'red'
 
 pause -1

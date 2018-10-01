@@ -5,3 +5,6 @@ amro*.dat
 FS.dat
 lastTrajectory.dat
 trajectory.dat
+fastTrajectory.dat
+fastAMRO.dat
+fastBuddy
